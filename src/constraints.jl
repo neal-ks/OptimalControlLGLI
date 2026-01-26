@@ -26,15 +26,14 @@ function construct_constraint_function(_f, disc_map; initial_bfn, final_bfn)
     # Get the dynamic constraint function, uses states and controls
     dyn_con_func = construct_dynamic_constraints(_f, disc_map)
 
-    return function constraint_func(opt_var, params)
+    return function constraint_func(res, opt_var, params)
         # Transform the 1D vector into a vector of state/control vectors at each discretisation point
         states = get_states(opt_var, disc_map)
-        controls = get_states(opt_var, disc_map)
+        controls = get_controls(opt_var, disc_map)
         dyn_cons = dyn_con_func(states, controls, 2*disc_map.time.t_diff, params)        
         bcp_init = initial_bfn(states[1], params)
         bcp_final = final_bfn(states[end], params)
-        # TODO: Support more constraint types eg. path constraints
-        return [dyn_cons; bcp_init; bcp_final]
+        res .= [dyn_cons; bcp_init; bcp_final]
     end
 end
 
@@ -46,6 +45,8 @@ function construct_free_time_constraint_function(_f, disc_map; initial_bfn, fina
         # Transform the 1D vector into a vector of state/control vectors at each discretisation point
         states = get_states(opt_var, disc_map)
         controls = get_controls(opt_var, disc_map)
+        # last element of the design variable vector is the time taken, rescaling the derivatives as time taken
+        # changes
         dyn_cons = dyn_con_func(states, controls, opt_var[end], params)        
         bcp_init = initial_bfn(states[1], params)
         bcp_final = final_bfn(states[end], params)
