@@ -1,14 +1,16 @@
-function __wrap_discretisation(des_var, num_params, num_nodes)
+@inline function __wrap_discretisation(des_var, num_params, num_nodes)
     wrapped_vector = [des_var[(1:num_params) .+ (i-1)*num_params] for i in 1:num_nodes]
     return wrapped_vector
 end
 
 @inline function get_states(opt_var, disc_map::LGLIGrid)
-    return __wrap_discretisation(opt_var[disc_map.state_idx], disc_map.num_states, disc_map.order)
+    num_state_var = disc_map.num_segments*(disc_map.order-1) + 1
+    return __wrap_discretisation(opt_var[disc_map.state_idx], disc_map.num_states, num_state_var)
 end
 
 @inline function get_controls(opt_var, disc_map::LGLIGrid)
-    return __wrap_discretisation(opt_var[disc_map.control_idx], disc_map.num_controls, disc_map.order)
+    num_state_var = disc_map.num_segments*(disc_map.order-1) + 1
+    return __wrap_discretisation(opt_var[disc_map.control_idx], disc_map.num_controls, num_state_var)
 end
 
 @inline function set_controls!(opt_var, idx, control, disc_map)
@@ -22,5 +24,5 @@ end
 end
 
 @inline function zero_opt_var(grid::LGLIGrid)
-    return zeros(grid.order*(grid.num_states + grid.num_controls))
+    return zeros((grid.num_segments*(grid.order-1) + 1)*(grid.num_states + grid.num_controls))
 end

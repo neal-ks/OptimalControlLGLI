@@ -40,8 +40,9 @@ struct LGLIGrid
     function LGLIGrid(num_states::Int, num_controls::Int, time_initial, time_final, num_segments::Int=1, order::Int=3)
         order > 1 || error("Order on the LGL-I transciption must be greater than 1")
         num_segments > 0 || error("Transcription must have at least 1 segment. Check the order of the function arguments")
-        state_idx = 1:num_states*order
-        control_idx = state_idx[end] .+ (1:num_controls*order)
+        num_disc_points = (order-1)*num_segments + 1
+        state_idx = 1:num_states*num_disc_points
+        control_idx = state_idx[end] .+ (1:num_disc_points)
         quad = GaussLobatto(order)
         time = GaussLobattoTime(time_initial, time_final)
         return new(

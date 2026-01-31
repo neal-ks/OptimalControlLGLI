@@ -11,9 +11,9 @@ function (basis::LGLBasis)(querry_node, params)
     return prod(@. (querry_node - basis.nodes) / (basis.basis_node - basis.nodes))
 end
 
-function lgl_integration_matrix(quadrature::LGLIGrid)
-    integration_mtx = zeros(quadrature.order-1, quadrature.order)
-    nodes = quadrature.quadrature.nodes
+function lgl_integration_matrix(disc_map::LGLIGrid)
+    integration_mtx = zeros(disc_map.order-1, disc_map.order)
+    nodes = disc_map.quadrature.nodes
     for j in eachindex(nodes)
         lagrange_basis = LGLBasis(nodes, j)
         for i in eachindex(nodes)[2:end]
