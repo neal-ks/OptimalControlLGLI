@@ -96,14 +96,21 @@ x0 = zero_opt_var(grid)
 '''
 The user can then set guesses for the control and state variables using the set_state! and set_control! methods. These take the following arguments:
 opt_var - The initial guess of the design variables which is modified in place.
-idx - The index of the state/control.
-state/control - The values of the states/controls.
-disc_map - A grid struct which defines the discretisaiton.
+grid - A grid struct which defines the discretisaiton.
+interp - An Abstract Inteprolation type as defined in Interpoaltions.jl
+idx - The index of the state/control variables.
 
-set_controls!(x0, 1, range(0.5*pi/180, 99.5*pi/180, grid.order), grid)
-set_states!(x0, 1, range(0.0, 10.0, grid.order), grid)
-set_states!(x0, 2, range(10.0, 7.0, grid.order), grid)
-set_states!(x0, 3, range(0.0, 8.0, grid.order), grid)
+'''julia
+x_interp = linear_interpolation([0, 10], [0.0, 10.0])
+y_interp = linear_interpolation([0, 10], [10.0, 5.0])
+v_interp = linear_interpolation([0, 10], [0, 9.9])
+theta_interp = linear_interpolation([0, 10], [5, 100.5]*pi/180)
+set_state!(x0, grid, x_interp, 1)
+set_state!(x0, grid, y_interp, 2)
+set_state!(x0, grid, v_interp, 3)
+set_control!(x0, grid, theta_interp, 1)
+'''
+
 #### But what about the cost function!
 But what about the actual objective function. In this case the OPCMinimumTimeProblem implements the cost function automatically. Using the already defined dynamics, boundary function and discretisation map a OPCMinimumTimeProblem can be defined as follows:
 
@@ -145,7 +152,7 @@ Here is an example plot which plots the path of the ball. Visually inspect the r
 - ~~Minimum viable example Brachistrone or 1D analytic example~~
 - A better name, a lot of the obvious ones are taken
 - Add more example problems
-- Make defining initial guess easier
+- ~~Make defining initial guess easier~~
 - Make code type stable
 - Better documentation
 - ~~Multiple segments~~
