@@ -2,7 +2,7 @@
     @testset "Brachistochrone" begin
         # Example from the dymos documentation
         # https://openmdao.github.io/dymos/examples/brachistochrone/brachistochrone.html
-        using OptimizationBase, OptimizationIpopt
+        using OptimizationBase, OptimizationIpopt, Interpolations
 
         function brachistone(states, controls, params)
             g = 9.805
@@ -33,18 +33,22 @@
         num_controls = 1
         num_segments = 1
         order = 30
-        t_init = 0
-        t_final = 10
+        t_init = 0.0
+        t_final = 10.0
 
         grid = LGLIGrid(num_states, num_controls, t_init, t_final, num_segments, order)
 
         x0 = zero_opt_var(grid)
-        set_controls!(x0, 1, range(0.5*pi/180, 99.5*pi/180, grid.order), grid)
-        set_states!(x0, 1, range(0.0, 10.0, grid.order), grid)
-        set_states!(x0, 2, range(10.0, 7.0, grid.order), grid)
-        set_states!(x0, 3, range(0.0, 8.0, grid.order), grid)
+        x_interp = linear_interpolation([0, 10], [0.0, 10.0])
+        y_interp = linear_interpolation([0, 10], [10.0, 5.0])
+        v_interp = linear_interpolation([0, 10], [0, 9.9])
+        theta_interp = linear_interpolation([0, 10], [5, 100.5]*pi/180)
+        set_state!(x0, grid, x_interp, 1)
+        set_state!(x0, grid, y_interp, 2)
+        set_state!(x0, grid, v_interp, 3)
+        set_control!(x0, grid, theta_interp, 1)
 
-        prob = OPCMinimumTimeProblem(brachistone, init_bcfn, final_bcfn, x0, 0, grid, time_guess=1.8)
+        prob = OPCMinimumTimeProblem(brachistone, init_bcfn, final_bcfn, x0, 0, grid)
         opt = IpoptOptimizer()
         sol = solve(prob, opt)
         @test sol.objective ≈ 1.801754704304293 atol=1e-2
@@ -52,7 +56,8 @@
     end
 
     @testset "1D Example" begin
-        # Example from: Integral form of Legendre-Gauss-Lobatto collocation for optimal control,
+        # Example from: 
+        # Integral form of Legendre-Gauss-Lobatto collocation for optimal control,
         # Gabriela Abadia-Doyle, William W. Hager, Anil V. Rao
         # https://www.sciencedirect.com/science/article/pii/S001600322500612X?ref=pdf_download&fr=RR-2&rr=9c3c78a56db4942d
 
@@ -64,13 +69,12 @@
         final_boundary(x, p) = 0
         cost(x, u, p) = -x[end][1]
 
-
         num_states = 1
         num_controls = 1
         num_segments = 1
         order = 30
-        t_init = 0
-        t_final = 2
+        t_init = 0.0
+        t_final = 2.0
         grid = LGLIGrid(num_states, num_controls, t_init, t_final, num_segments, order)
         x0 = zero_opt_var(grid)
         

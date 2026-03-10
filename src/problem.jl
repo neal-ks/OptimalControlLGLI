@@ -21,8 +21,8 @@ function OPCFixedTimeProblem(cost_func, state_rate_func, boundary_init, boundary
     return OptimizationProblem(opt_func, x0, params, lcons=lcons, ucons=ucons)
 end
 
-function OPCMinimumTimeProblem(state_rate_func, boundary_init, boundary_final, x0, params, disc_map::LGLIGrid; time_guess=1.)
-    x0 = [x0; time_guess]
+function OPCMinimumTimeProblem(state_rate_func, boundary_init, boundary_final, x0, params, disc_map::LGLIGrid; control_lb=nothing, control_ub=nothing)
+    x0 = [x0; disc_map.time.t_final]
     cost(opt_var, p) = opt_var[end]
     opt_func = OptimizationFunction(
         cost, 
@@ -35,5 +35,14 @@ function OPCMinimumTimeProblem(state_rate_func, boundary_init, boundary_final, x
         )
     )
     lcons, ucons = get_constraint_bounds(disc_map)
-    return OptimizationProblem(opt_func, x0, params, lcons=lcons, ucons=ucons)
+    num_des_var = length(x0)
+    lb = fill(-Inf, num_des_var)
+    ub = fill(Inf, num_des_var)
+    if !isnothing(control_lb)        
+        lb[disc_map.control_idx] .= control_lb
+    end
+    if !isnothing(control_ub)
+        ub[disc_map.control_idx] .= control_ub
+    end
+    return OptimizationProblem(opt_func, x0, params, lb=lb, ub=ub, lcons=lcons, ucons=ucons)
 end

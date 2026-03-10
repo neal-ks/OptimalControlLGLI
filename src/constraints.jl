@@ -10,7 +10,6 @@ function integration_parameters(disc_map)
     return f_interp, E
 end
 
-
 function construct_dynamic_constraints(_f, disc_map)
     f_interp, E = integration_parameters(disc_map)
     
@@ -22,17 +21,16 @@ function construct_dynamic_constraints(_f, disc_map)
 
         defects .= vec(constraints)
     end
-
-    t_duration = (disc_map.time.t_final - disc_map.time.t_initial)/disc_map.num_segments
     
-    return function dynamic_constraints!(defects, states, controls, params)
-        # calculate the initial state rate
-        state_rate = @. 0.5*t_duration*_f(states, controls, params)
-        @inbounds for i=1:disc_map.num_segments
-            xu_idx = ((i-1)*(disc_map.order-1) + 1):(i*(disc_map.order-1) + 1)
-            defect_idx = ((i-1)*(disc_map.order-1) + 1):(i*(disc_map.order-1))
+    return function dynamic_constraints!(defects, states, controls, params, t_duration=disc_map.time.t_diff)
+        t_scalar = 0.5 * t_duration/disc_map.num_segments
+        state_rate = @. t_scalar*_f(states, controls, params)
 
-            defects_seg = @view defects[defect_idx]
+        for i=1:disc_map.num_segments
+            xu_idx = ((i-1)*(disc_map.order-1) + 1):(i*(disc_map.order-1) + 1)
+            defects_idx = ((i-1)*disc_map.num_states*(disc_map.order-1) + 1):(i*disc_map.num_states*(disc_map.order-1))
+
+            defects_seg = @view defects[defects_idx]
             states_seg = @view states[xu_idx]
             state_rates_seg = @view state_rate[xu_idx]
             segment_con_func!(defects_seg, states_seg, state_rates_seg) 
@@ -41,12 +39,13 @@ function construct_dynamic_constraints(_f, disc_map)
 end
 
 function construct_constraint_function(_f, disc_map; initial_bfn, final_bfn)
-    # Get the dynamic constraint function, uses states and controls
-    dyn_con_func! = construct_dynamic_constraints(_f, disc_map)
+    # Generate a mapping from constraints functions to the constraint vector
     dyn_con_idx = 1:(disc_map.num_states*(disc_map.order-1)*disc_map.num_segments)
-
     bfn_init_idx = dyn_con_idx[end] .+ (1:disc_map.num_states)
     bfn_final_idx = bfn_init_idx[end] .+ (1:disc_map.num_states)
+
+    # Get the dynamic constraint function, uses states and controls
+    dyn_con_func! = construct_dynamic_constraints(_f, disc_map)
 
     return function constraint_func!(res, opt_var, params)
         # Transform the 1D vector into a vector of state/control vectors at each discretisation point
@@ -60,19 +59,22 @@ function construct_constraint_function(_f, disc_map; initial_bfn, final_bfn)
 end
 
 function construct_free_time_constraint_function(_f, disc_map; initial_bfn, final_bfn)
-    # Get the dynamic constraint function, uses states and controls
-    dyn_con_func = construct_dynamic_constraints(_f, disc_map)
+    # Generate a mapping from constraints functions to the constraint vector
+    dyn_con_idx = 1:(disc_map.num_states*(disc_map.order-1)*disc_map.num_segments)
+    bfn_init_idx = dyn_con_idx[end] .+ (1:disc_map.num_states)
+    bfn_final_idx = bfn_init_idx[end] .+ (1:disc_map.num_states)
+    dyn_con_func! = construct_dynamic_constraints(_f, disc_map)
 
     return function (res, opt_var, params)
         # Transform the 1D vector into a vector of state/control vectors at each discretisation point
         states = get_states(opt_var, disc_map)
         controls = get_controls(opt_var, disc_map)
-        # last element of the design variable vector is the time taken, rescaling the derivatives as time taken
-        # changes
-        dyn_cons = dyn_con_func(states, controls, opt_var[end], params)        
-        bcp_init = initial_bfn(states[1], params)
-        bcp_final = final_bfn(states[end], params)
-        res .= [dyn_cons; bcp_init; bcp_final]
+        defects = @view res[dyn_con_idx]
+        # last element of the design variable vector is the duration, to map the time derivatives to the
+        # non-dimensional derivative used to calculate the dynamic constraints
+        dyn_con_func!(defects, states, controls, params, opt_var[end])        
+        res[bfn_init_idx] .= initial_bfn(states[1], params)
+        res[bfn_final_idx] .= final_bfn(states[end], params)
     end
 end
 

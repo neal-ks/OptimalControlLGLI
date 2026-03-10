@@ -23,19 +23,12 @@ end
     return __wrap_discretisation(opt_var[disc_map.control_idx], disc_map.num_controls, num_nodes)
 end
 
-function set_state!(opt_var::Vector, disc_map::LGLIGrid, interpolation::AbstractInterpolation, idx::Int)
-    idx = disc_map.state_idx[idx:disc_map.num_states:end]
-    states = @view opt_var[idx]
-    states .= interpolation(disc_map.time.(disc_map.collocation_nodes))
+function set_state!(opt_var::Vector, grid::LGLIGrid, interpolation::AbstractInterpolation, idx::Int)
+    states = @views get_states(opt_var, grid, idx)
+    states .= interpolation(grid.time.(grid.collocation_nodes))
 end
 
-function set_control!(opt_var::Vector, disc_map::LGLIGrid, interpolation::AbstractInterpolation, idx::Int)
-    idx = disc_map.control_idx[idx:disc_map.num_controls:end]
-    controls = @view opt_var[idx]
-    controls .= interpolation(disc_map.time.(disc_map.collocation_nodes))
+function set_control!(opt_var::Vector, grid::LGLIGrid, interpolation::AbstractInterpolation, idx::Int)
+    states = @views get_controls(opt_var, grid, idx)
+    states .= interpolation(grid.time.(grid.collocation_nodes))
 end
-
-@inline function zero_opt_var(grid::LGLIGrid)
-    return zeros((grid.num_segments*(grid.order-1) + 1)*(grid.num_states + grid.num_controls))
-end
-

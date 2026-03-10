@@ -5,8 +5,8 @@ using FastGaussQuadrature: gausslobatto
     num_controls = 1
     num_segments = 1 
     order = 5
-    time_initial = 8 
-    time_final = 30
+    time_initial = 8.0 
+    time_final = 30.0
     function integrand(states, controls, params)
         tau, weights = gausslobatto(order)
         map_time = GaussLobattoTime(8, 30)

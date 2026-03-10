@@ -1,6 +1,6 @@
 # OptControlLGLI
 
-Package to solve optimum control problems using optimum control problems using LGL-Integral method (https://www.sciencedirect.com/science/article/pii/S001600322500612X?ref=pdf_download&fr=RR-2&rr=9bfe6d95ab2dcd95). This is in a very early alpha state, use at your own risk or probably not at all 😂😂😂!
+Package to solve optimum control problems using optimum control problems using LGL-Integral method (https://www.sciencedirect.com/science/article/pii/S001600322500612X?ref=pdf_download&fr=RR-2&rr=9bfe6d95ab2dcd95).
 
 This document currently assumes knowledge of optimal control and general optimisation principles.
 
@@ -9,6 +9,7 @@ The following resources are recommended as approachable learning resources for e
 Optimal Control:
  - Dymos Documentation (https://openmdao.github.io/dymos/index.html)
  - Optimal Control (CMU 16-745) (https://www.youtube.com/watch?v=6rUdAOCNXAU)
+ - A Primer on Pontryagin's Principle in Optimal Control, Ross M
 
 Direct Collocation focused resources:
  - An Introduction to Trajectory Optimization: How to Do Your Own Direct Collocation (https://epubs.siam.org/doi/epdf/10.1137/16M1062569)
@@ -147,12 +148,12 @@ Here is an example plot which plots the path of the ball. Visually inspect the r
 - Make defining initial guess easier
 - Make code type stable
 - Better documentation
-- Multiple segments
+- ~~Multiple segments~~
 - Easy scaling/auto-scaling
 - Plotting utilities to more easily plot solutions
 - Extensibility to add other constraints and paramter optimisation.
 - More flexible boundary functions
 - Debug plotting animation
-- Mayers term objective function utility, partially implemented but not tested (partially implemented already see intergration.jl)
+- Lagrange term objective function utility, partially implemented but not tested (partially implemented already see intergration.jl)
 - Path constraints
 - Add more collocation options (Hermite Simpson, LGL, LGR etc.) with a refactor into a core/sub-libraries package.
