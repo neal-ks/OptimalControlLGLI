@@ -100,7 +100,7 @@ grid - A grid struct which defines the discretisaiton.
 interp - An Abstract Inteprolation type as defined in Interpoaltions.jl
 idx - The index of the state/control variables.
 
-'''julia
+''''julia
 x_interp = linear_interpolation([0, 10], [0.0, 10.0])
 y_interp = linear_interpolation([0, 10], [10.0, 5.0])
 v_interp = linear_interpolation([0, 10], [0, 9.9])
@@ -109,24 +109,24 @@ set_state!(x0, grid, x_interp, 1)
 set_state!(x0, grid, y_interp, 2)
 set_state!(x0, grid, v_interp, 3)
 set_control!(x0, grid, theta_interp, 1)
-'''
+''''
 
 #### But what about the cost function!
 But what about the actual objective function. In this case the OPCMinimumTimeProblem implements the cost function automatically. Using the already defined dynamics, boundary function and discretisation map a OPCMinimumTimeProblem can be defined as follows:
 
 ### Solving the Brachistochrone Problem
-'''julia
+''''julia
 params = 0
 prob = OPCMinimumTimeProblem(brachistone, init_bcfn, final_bcfn, x0, params, grid, time_guess=1.8)
-'''
+''''
 No parameters are required in this case, but a guess for the end time is provided. The OPCMinimumTimeProblem takes the user differential equation functions and boundary functions and cosntructs a nonlinear optimisation problem, using the LGL-I method.
 
 Then all the user has to do is to provide a optimiser to the problem, many are available but the author has had good results with IPOPT and solve the optimisation problem.
 
-'''julia
+''''julia
 opt = IpoptOptimizer()
 sol = solve(prob, opt)
-'''
+''''
 
 ### Plotting and verifying the results
 
@@ -134,10 +134,10 @@ Now that the optimisation has finished how can the results be verified. A good s
 
 If the optimiser gives a sucessful return code this is a good start, however doesn't garauntee success. Particularly with optimal control problems it is recommended to plot the state and control history of the optimal solution. To help with this the package defines the utility functions get_states and get_controls. These take the design variable vector (sol.u for the optimised design variables) and extract out the state and control vectors at each state discretistion node.
 
-'''julia
+''''julia
 states = get_states(sol.u, grid)
 controls = get_controls(sol.u, grid)
-'''
+''''
 
 Here is an example plot which plots the path of the ball. Visually inspect the results to see if they are what you expect. If not or the return code is failing
 
