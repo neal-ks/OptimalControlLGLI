@@ -153,7 +153,6 @@ Here is an example plot which plots the path of the ball. Visually inspect the r
 
 ## TODO List
 - ~~Minimum viable example Brachistrone or 1D analytic example~~
-- A better name, a lot of the obvious ones are taken
 - Add more example problems
 - ~~Make defining initial guess easier~~
 - Make code type stable
@@ -163,7 +162,6 @@ Here is an example plot which plots the path of the ball. Visually inspect the r
 - Plotting utilities to more easily plot solutions
 - Extensibility to add other constraints and paramter optimisation.
 - More flexible boundary functions
-- Debug plotting animation
 - Lagrange term objective function utility, partially implemented but not tested (partially implemented already see intergration.jl)
 - Path constraints
 - Add more collocation options (Hermite Simpson, LGL, LGR etc.) with a refactor into a core/sub-libraries package.
